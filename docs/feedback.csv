@@ -1,0 +1,6 @@
+feedbacks,categories
+"The service was good but the staff was very rude","['service_quality', 'staff_conduct']"
+"I waited almost an hour before anyone attended to me","['waiting_time']"
+"The teller was very polite and explained everything clearly","['staff_conduct', 'service_quality']"
+"Your mobile app keeps crashing every time I try to log in","['app_usability']"
+"The transaction fees are way too high compared to other banks","['pricing_fees']"

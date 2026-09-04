@@ -1,5 +1,5 @@
 import os
-import glob
+import csv
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from groq import Groq
@@ -11,15 +11,16 @@ groq_client = Groq()  # reads GROQ_API_KEY from environment
 
 
 def load_and_chunk_documents(docs_dir=DOCS_DIR):
-    """Read all .txt files and split them into line-level chunks."""
+    """Read the feedback CSV and turn each row into a chunk."""
     chunks = []
-    for filepath in glob.glob(os.path.join(docs_dir, "*.txt")):
-        with open(filepath, "r", encoding="utf-8") as f:
-            text = f.read()
-        for line in text.split("\n"):
-            line = line.strip()
-            if line:
-                chunks.append({"text": line, "source": os.path.basename(filepath)})
+    csv_path = os.path.join(docs_dir, "feedback.csv")
+    with open(csv_path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            feedback_text = row["feedbacks"]
+            categories = row["categories"]
+            chunk_text = f"Feedback: {feedback_text} | Categories: {categories}"
+            chunks.append({"text": chunk_text, "source": "feedback.csv"})
     return chunks
 
 
@@ -38,7 +39,7 @@ def cosine_similarity(a, b):
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 
 
-def retrieve(question, chunks, top_k=2):
+def retrieve(question, chunks, top_k=5):
     """Find the top_k most relevant chunks for a given question."""
     question_embedding = embedder.encode(question)
     scored = []
@@ -62,7 +63,7 @@ Question: {question}
 
 Answer:"""
 
-         response = groq_client.chat.completions.create(
+    response = groq_client.chat.completions.create(
         model="openai/gpt-oss-20b",
         messages=[{"role": "user", "content": prompt}],
     )
