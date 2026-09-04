@@ -1,0 +1,4 @@
+Our product supports integration with Slack, Notion, and Google Drive.
+The free plan allows up to 100 API calls per day.
+Paid plans start at $29/month and include unlimited API calls.
+Customer support is available via email with a 24-hour response time.
