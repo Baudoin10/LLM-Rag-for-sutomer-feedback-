@@ -1,46 +1,810 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Murakoze AI Assistant</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; }
-        #chat { border: 1px solid #ccc; padding: 15px; height: 400px; overflow-y: auto; margin-bottom: 10px; }
-        .user { color: blue; margin: 8px 0; }
-        .assistant { color: green; margin: 8px 0; }
-        #question { width: 80%; padding: 8px; }
-        button { padding: 8px 16px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Murakoze — AI Insights mockup</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
+<style>
+  :root{
+    --blue:#1567c9;
+    --blue-dark:#0d4a94;
+    --orange:#e8730f;
+    --green:#2e8b3d;
+    --purple:#6b4fd6;
+    --red:#d33a3a;
+    --text:#242424;
+    --text-muted:#6b6b6b;
+    --border:#e6e6e6;
+    --page-bg:#ffffff;
+
+    --page-px:48px;
+    --content-max:1180px;
+    --space-1:8px;
+    --space-2:16px;
+    --space-3:24px;
+    --space-4:32px;
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--text);
+    background:var(--page-bg);
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .container{
+    max-width:var(--content-max);
+    margin:0 auto;
+    padding-left:var(--page-px);
+    padding-right:var(--page-px);
+  }
+
+  /* ===== Top nav ===== */
+  header.topnav{border-bottom:1px solid var(--border)}
+  .topnav-inner{
+    display:flex;justify-content:space-between;align-items:center;
+    padding-top:18px;padding-bottom:18px;
+  }
+  .nav-left{display:flex;gap:36px;align-items:center}
+  .nav-item{
+    position:relative;display:flex;align-items:center;gap:6px;
+    font-size:14.5px;color:#4a4a4a;cursor:pointer;
+    padding:6px 0;border-bottom:2px solid transparent;
+  }
+  .nav-item i{font-size:17px;color:#8a8a8a}
+  .nav-item.active{color:var(--blue);border-bottom-color:var(--blue)}
+  .nav-item.active i{color:var(--blue)}
+  .nav-item:hover{color:var(--blue)}
+  .chev{font-size:12px !important;margin-left:1px}
+  .nav-right{display:flex;align-items:center;gap:12px}
+  .avatar{
+    width:36px;height:36px;border-radius:50%;border:1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;color:#9a9a9a;font-size:17px;
+    background:#fafafa;
+  }
+  .who p{margin:0;font-size:14px;font-weight:500;line-height:1.35}
+  .who .role{color:var(--text-muted);font-size:12.5px;font-weight:400}
+
+  /* ===== Dropdown ===== */
+  .dropdown{
+    position:absolute;top:calc(100% + 14px);left:0;background:#fff;border:1px solid var(--border);
+    border-radius:var(--radius);box-shadow:0 12px 32px rgba(20,20,20,.10);
+    padding:28px 32px;display:none;gap:52px;z-index:20;min-width:520px;
+  }
+  .nav-item.open .dropdown{display:flex}
+  .dd-col{display:flex;flex-direction:column;gap:13px;min-width:130px}
+  .dd-head{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;margin-bottom:4px}
+  .dd-head i{font-size:16px}
+  .dd-col a{font-size:14px;color:#333;display:flex;align-items:center;gap:7px}
+  .dd-col a:hover{color:var(--blue);text-decoration:none}
+  .badge-new{font-size:10.5px;font-weight:600;background:#f1e9ff;color:var(--purple);padding:2px 7px;border-radius:20px;letter-spacing:.02em}
+
+  /* ===== Page shell ===== */
+  main{padding-top:var(--space-4);padding-bottom:64px}
+  .page-header{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    border:1px solid var(--border);border-radius:var(--radius);
+    padding:var(--space-3) var(--space-3);margin-bottom:var(--space-3);
+  }
+  .page-header h1{font-size:22px;font-weight:600;margin:0 0 6px;letter-spacing:-.01em}
+  .crumb{font-size:13px;color:var(--text-muted)}
+  .crumb a{color:var(--blue)}
+  .org{display:flex;align-items:center;gap:7px;font-weight:600;font-size:15px;color:#333}
+  .org i{color:#8a8a8a}
+
+  .hint{
+    background:#f7f3ff;border:1px solid #e6dbfc;color:#4b3585;font-size:13.5px;
+    padding:14px var(--space-3);border-radius:var(--radius);margin-bottom:var(--space-3);
+    display:flex;gap:10px;align-items:center;line-height:1.5;
+  }
+  .hint i{font-size:16px;flex-shrink:0}
+
+  .filter-panel{
+    border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:var(--radius);
+    padding:var(--space-3);margin-bottom:var(--space-3);
+    display:flex;gap:56px;
+  }
+  .filter-field{position:relative}
+  .filter-field label{display:block;font-size:13px;color:var(--text-muted);margin-bottom:9px}
+  .filter-field select,.filter-field input{
+    width:280px;padding:10px 12px;border:1px solid var(--border);border-radius:7px;
+    font-size:14px;color:var(--text);background:#fff;font-family:inherit;
+  }
+  .filter-field select:hover,.filter-field input:hover{border-color:#c9c9c9}
+  .filter-field select{cursor:pointer}
+  .filter-field input[readonly]{cursor:pointer}
+  .filter-field input[readonly]:focus{outline:none;border-color:var(--blue)}
+
+  /* ===== Date range calendar popover ===== */
+  .cal-pop{
+    position:absolute;top:calc(100% + 8px);left:0;background:#fff;border:1px solid var(--border);
+    border-radius:var(--radius);box-shadow:0 12px 32px rgba(20,20,20,.12);
+    padding:16px;z-index:30;display:none;width:280px;
+  }
+  .cal-pop.open{display:block}
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .cal-head .cal-title{font-size:13.5px;font-weight:600}
+  .cal-nav{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:#fff;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;color:#555;font-size:14px}
+  .cal-nav:hover{background:#f5f5f5}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .cal-dow{font-size:10.5px;color:var(--text-muted);text-align:center;padding:4px 0;font-weight:600}
+  .cal-day{
+    font-size:12.5px;text-align:center;padding:7px 0;border-radius:6px;cursor:pointer;color:var(--text);
+  }
+  .cal-day:hover{background:#eaf1fc}
+  .cal-day.muted{color:#c9c9c9}
+  .cal-day.in-range{background:#eaf1fc}
+  .cal-day.range-end{background:var(--blue);color:#fff}
+  .cal-hint{font-size:11.5px;color:var(--text-muted);margin-top:10px;text-align:center}
+
+  .updated{
+    display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text-muted);
+    margin-bottom:var(--space-3);
+  }
+
+  /* ===== Cards ===== */
+  .kpi-row{
+    display:grid;grid-template-columns:repeat(5,1fr);
+    border:1px solid var(--border);border-radius:var(--radius);
+    padding:var(--space-3);margin-bottom:var(--space-3);
+  }
+  .kpi{padding:0 var(--space-3);border-right:1px solid var(--border)}
+  .kpi:first-child{padding-left:0}
+  .kpi:last-child{border-right:none;padding-right:0}
+  .kpi .label{display:flex;align-items:center;gap:7px;font-size:13.5px;color:#4a4a4a;margin-bottom:10px}
+  .kpi .label i{font-size:16px;color:#9a9a9a}
+  .kpi .value{font-size:23px;font-weight:600;letter-spacing:-.01em}
+  .kpi .value.pos{color:var(--green)}
+  .kpi .value.neg{color:var(--red)}
+  .kpi.clickable{cursor:pointer;border-radius:7px;transition:background .15s ease}
+  .kpi.clickable:hover{background:#fafafa}
+
+  .section{
+    border:1px solid var(--border);border-radius:var(--radius);
+    padding:var(--space-3);margin-bottom:var(--space-3);
+  }
+  .section h2{font-size:15.5px;margin:0 0 20px;font-weight:600}
+
+  .cat-row{padding:14px 0;border-bottom:1px solid var(--border);border-radius:6px;transition:background .6s ease}
+  .cat-row:first-child{padding-top:0}
+  .cat-row:last-child{padding-bottom:0;border-bottom:none}
+  .cat-row.flash{background:#fdf1e9}
+  .cat-top{display:flex;justify-content:space-between;font-size:14px;margin-bottom:9px}
+  .cat-top .name{font-weight:500}
+  .cat-top .meta{color:var(--text-muted)}
+  .bar{height:7px;border-radius:4px;overflow:hidden;display:flex;background:#f0f0f0}
+  .bar .pos{background:var(--green)}
+  .bar .neg{background:var(--red)}
+
+  .flag-row{
+    display:flex;justify-content:space-between;align-items:center;padding:14px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .flag-row:first-child{padding-top:0}
+  .flag-row:last-child{padding-bottom:0;border-bottom:none}
+  .flag-row .name{font-size:14px;font-weight:500;margin:0 0 4px}
+  .flag-row .meta{font-size:12.5px;color:var(--text-muted);margin:0}
+  .pill{font-size:12.5px;font-weight:500;padding:6px 13px;border-radius:20px;background:#fceded;color:var(--red)}
+  .pill.pos{background:#eaf6ec;color:var(--green)}
+
+  .tag{font-size:12px;font-weight:500;padding:4px 11px;border-radius:20px;background:#eaf1fc;color:var(--blue)}
+  .sent{display:inline-flex;align-items:center;gap:6px;font-size:13.5px}
+  .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+  .dot.pos{background:var(--green)}
+  .dot.neg{background:var(--red)}
+
+  /* ===== Live feed ===== */
+  .feed-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+  .feed-head h2{margin:0 0 4px}
+  .feed-head .sub{font-size:13px;color:var(--text-muted)}
+  .feed-match{font-size:12.5px;font-weight:500;padding:6px 13px;border-radius:20px;background:#eaf6ec;color:var(--green);white-space:nowrap}
+  .feed-list{display:flex;flex-direction:column;gap:14px}
+  .feed-card{border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+  .feed-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:11px}
+  .feed-meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:13px}
+  .stars{font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;background:#f3f3f3;color:#8a6d00}
+  .stars.low{background:#fceded;color:var(--red)}
+  .stars.mid{background:#fdf1e0;color:var(--orange)}
+  .stars.high{background:#eaf6ec;color:var(--green)}
+  .feed-branch{font-weight:600;color:#333}
+  .feed-sep{color:#c9c9c9}
+  .feed-cat{color:var(--text-muted);font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+  .feed-nlp{font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:20px;letter-spacing:.02em;white-space:nowrap}
+  .feed-nlp.negative{background:#fceded;color:var(--red)}
+  .feed-nlp.positive{background:#eaf6ec;color:var(--green)}
+  .feed-nlp.neutral{background:#f1f1f1;color:#6b6b6b}
+  .feed-time{display:block;font-size:11.5px;color:var(--text-muted);margin-top:4px;text-align:right}
+  .feed-quote{font-size:14px;font-style:italic;color:#333;line-height:1.55;margin:0 0 12px}
+  .feed-action{
+    display:flex;gap:10px;align-items:flex-start;
+    background:#fdf1e9;border:1px solid #f6ddc9;color:#5a3410;
+    padding:11px 13px;border-radius:8px;
+  }
+  .feed-action i{font-size:15px;color:var(--orange);margin-top:2px;flex-shrink:0}
+  .feed-action .fa-label{display:block;font-size:11px;font-weight:600;color:#b5540f;text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px}
+  .feed-action .fa-text{font-size:13px;line-height:1.4}
+
+  /* ===== Floating AI Chatbot widget ===== */
+  #chatToggleBtn{
+    position:fixed;bottom:26px;right:26px;width:58px;height:58px;border-radius:50%;
+    background:linear-gradient(135deg, var(--blue), var(--purple));
+    color:#fff;border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;font-size:26px;
+    box-shadow:0 8px 24px rgba(20,20,20,.22);
+    z-index:100;transition:transform .15s ease;
+  }
+  #chatToggleBtn:hover{transform:scale(1.06)}
+  #chatToggleBtn .ti-x{display:none}
+  #chatToggleBtn.open .ti-message-chatbot{display:none}
+  #chatToggleBtn.open .ti-x{display:block}
+
+  #chatWidget{
+    position:fixed;bottom:96px;right:26px;width:340px;max-width:calc(100vw - 40px);
+    background:#fff;border:1px solid var(--border);border-radius:14px;
+    box-shadow:0 16px 48px rgba(20,20,20,.20);
+    display:none;flex-direction:column;overflow:hidden;
+    z-index:99;
+  }
+  #chatWidget.open{display:flex}
+
+  .chat-header{
+    background:linear-gradient(135deg, var(--blue), var(--purple));
+    color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;
+  }
+  .chat-header .bot-icon{
+    width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);
+    display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;
+  }
+  .chat-header .title{font-size:14px;font-weight:600;line-height:1.3}
+  .chat-header .subtitle{font-size:11.5px;opacity:.85;font-weight:400}
+
+  #chatMessages{
+    height:320px;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;
+    background:#fafbfc;
+  }
+  .msg{max-width:88%;font-size:13.5px;line-height:1.45;padding:9px 12px;border-radius:12px}
+  .msg.bot{background:#eef1f5;color:#2a2a2a;align-self:flex-start;border-bottom-left-radius:3px}
+  .msg.user{background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+  .msg.typing{background:#eef1f5;color:#8a8a8a;align-self:flex-start;font-style:italic}
+
+  .chat-input-row{
+    display:flex;gap:8px;padding:12px;border-top:1px solid var(--border);background:#fff;
+  }
+  .chat-input-row input{
+    flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:20px;
+    font-size:13.5px;font-family:inherit;outline:none;
+  }
+  .chat-input-row input:focus{border-color:var(--blue)}
+  .chat-input-row button{
+    width:36px;height:36px;border-radius:50%;border:none;background:var(--blue);color:#fff;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;
+  }
+  .chat-input-row button:hover{background:var(--blue-dark)}
+</style>
 </head>
 <body>
-    <h2>Ask about the feedback</h2>
-    <div id="chat"></div>
-    <input type="text" id="question" placeholder="Type your question...">
-    <button onclick="sendQuestion()">Send</button>
 
-    <script>
-        async function sendQuestion() {
-            const input = document.getElementById("question");
-            const question = input.value;
-            if (!question) return;
+<header class="topnav">
+  <div class="container topnav-inner">
+    <div class="nav-left">
+      <div class="nav-item active"><i class="ti ti-chart-line"></i>Dashboard <i class="ti ti-chevron-down chev"></i></div>
 
-            const chat = document.getElementById("chat");
-            chat.innerHTML += `<div class="user"><b>You:</b> ${question}</div>`;
-            input.value = "";
+      <div class="nav-item" id="reportsNav" onclick="toggleDD('reportsNav')">
+        <i class="ti ti-clipboard-list"></i>Reports <i class="ti ti-chevron-down chev"></i>
+        <div class="dropdown">
+          <div class="dd-col">
+            <div class="dd-head" style="color:var(--orange)"><i class="ti ti-mood-smile"></i>Rating</div>
+            <a href="#">Downloadable Reports</a>
+            <a href="#">Performance Report</a>
+            <a href="#">Ratings</a>
+            <a href="#" onclick="goToInsights(event)" style="color:var(--purple);font-weight:500">
+              <i class="ti ti-sparkles"></i>AI Insights <span class="badge-new">New</span>
+            </a>
+          </div>
+          <div class="dd-col">
+            <div class="dd-head" style="color:var(--blue)"><i class="ti ti-credit-card"></i>QMS</div>
+            <a href="#">Downloadable Reports</a>
+            <a href="#">Operator Report</a>
+            <a href="#">Report analysis</a>
+            <a href="#">Tickets</a>
+            <a href="#">Traffic Report</a>
+          </div>
+        </div>
+      </div>
 
-            const response = await fetch("/ask", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ question: question })
-            });
-            const data = await response.json();
+      <div class="nav-item"><i class="ti ti-settings"></i>Administration <i class="ti ti-chevron-down chev"></i></div>
+      <div class="nav-item"><i class="ti ti-users"></i>Queues</div>
+      <div class="nav-item"><i class="ti ti-search"></i>Search</div>
+    </div>
+    <div class="nav-right">
+      <div class="avatar"><i class="ti ti-user"></i></div>
+      <div class="who">
+        <p>Bonaparte</p>
+        <p class="role">Head of CX</p>
+      </div>
+    </div>
+  </div>
+</header>
 
-            chat.innerHTML += `<div class="assistant"><b>Assistant:</b> ${data.answer}</div>`;
-            chat.scrollTop = chat.scrollHeight;
-        }
+<main>
+  <div class="container">
+    <div class="page-header">
+      <div>
+        <h1>AI insights</h1>
+        <div class="crumb"><a href="#">Home</a> &nbsp;›&nbsp; AI insights</div>
+      </div>
+      <div class="org"><i class="ti ti-building-bank"></i>Bank Of Kigali</div>
+    </div>
 
-        document.getElementById("question").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") sendQuestion();
-        });
-    </script>
+    <div class="hint"><i class="ti ti-sparkles"></i>Categories and sentiment are generated automatically from customer comments. Confidence thresholds are managed under Administration → Feedback Categories.</div>
+
+    <div class="filter-panel">
+      <div class="filter-field">
+        <label>Branch</label>
+        <select id="branchSelect" onchange="onBranchChange()">
+          <option value="all">Bank Of Kigali (All branches)</option>
+          <option value="kigaliHeights">Kigali Heights</option>
+          <option value="butaro">Butaro</option>
+          <option value="magerwa">Agence Magerwa</option>
+          <option value="remera">Remera</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label>choose Date range</label>
+        <input type="text" id="dateRangeInput" value="2026-08-31 → 2026-09-06" readonly onclick="toggleCalendar(event)">
+        <div class="cal-pop" id="calPop">
+          <div class="cal-head">
+            <div class="cal-nav" onclick="calShiftMonth(-1)"><i class="ti ti-chevron-left"></i></div>
+            <div class="cal-title" id="calTitle"></div>
+            <div class="cal-nav" onclick="calShiftMonth(1)"><i class="ti ti-chevron-right"></i></div>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="cal-hint" id="calHint">Select a start date</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="updated"><i class="ti ti-clock"></i>Data last updated: 2 minutes ago</div>
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="label"><i class="ti ti-message-2"></i>Feedback analyzed</div>
+        <div class="value" id="kpiTotal">44,443</div>
+      </div>
+      <div class="kpi">
+        <div class="label"><i class="ti ti-mood-smile"></i>Positive sentiment</div>
+        <div class="value pos" id="kpiPositive">68%</div>
+      </div>
+      <div class="kpi">
+        <div class="label"><i class="ti ti-mood-sad"></i>Negative sentiment</div>
+        <div class="value neg" id="kpiNegative">24%</div>
+      </div>
+      <div class="kpi">
+        <div class="label"><i class="ti ti-tag"></i>Top category</div>
+        <div class="value" id="kpiTopCategory">Waiting time</div>
+      </div>
+      <div class="kpi clickable" id="kpiAttention" onclick="goToAttentionCategories()" title="View categories that need attention">
+        <div class="label"><i class="ti ti-alert-triangle"></i>Needs attention</div>
+        <div class="value neg" id="kpiAttentionValue">2 categories</div>
+      </div>
+    </div>
+
+    <div class="section" id="catSection">
+      <h2>Category breakdown</h2>
+      <div id="catRows"></div>
+    </div>
+
+    <div class="section">
+      <h2>Trending negative this week</h2>
+      <div id="trendingNegativeRows"></div>
+    </div>
+
+    <div class="section">
+      <h2>Trending positive this week</h2>
+      <div id="trendingPositiveRows"></div>
+    </div>
+
+    <div class="section">
+      <div class="feed-head">
+        <div>
+          <h2>Recent live feed</h2>
+          <div class="sub">Scroll through direct, raw feedback comments across the selected branches.</div>
+        </div>
+        <span class="feed-match" id="feedMatchCount">5 comments match criteria</span>
+      </div>
+      <div class="feed-list" id="feedList"></div>
+    </div>
+  </div>
+</main>
+
+<!-- ===== Floating AI Chatbot ===== -->
+<button id="chatToggleBtn" onclick="toggleChatWidget()">
+  <i class="ti ti-message-chatbot"></i>
+  <i class="ti ti-x"></i>
+</button>
+
+<div id="chatWidget">
+  <div class="chat-header">
+    <div class="bot-icon"><i class="ti ti-sparkles"></i></div>
+    <div>
+      <div class="title">Murakoze AI Assistant</div>
+      <div class="subtitle">Ask about your feedback data</div>
+    </div>
+  </div>
+  <div id="chatMessages">
+    <div class="msg bot">Hi! Ask me things like "find feedback about rude staff" or "any complaints about the app crashing?"</div>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="Type a question...">
+    <button onclick="sendChatMessage()"><i class="ti ti-send"></i></button>
+  </div>
+</div>
+
+<script>
+/* ===================== Nav dropdown ===================== */
+function toggleDD(id){
+  document.getElementById(id).classList.toggle('open');
+}
+document.addEventListener('click', function(e){
+  var nav = document.getElementById('reportsNav');
+  if(!nav.contains(e.target)) nav.classList.remove('open');
+});
+function goToInsights(e){
+  e.preventDefault();
+  document.getElementById('reportsNav').classList.remove('open');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ===================== Branch data + KPIs ===================== */
+var branchData = {
+  all: {
+    total: 44443, positive: 68, negative: 24,
+    topCategory: 'Waiting time',
+    cats: [
+      {name:'Waiting time', total:1240, pos:59, neg:41},
+      {name:'Staff conduct', total:860, pos:74, neg:26},
+      {name:'Application usability', total:410, pos:67, neg:33},
+      {name:'Pricing and fees', total:205, pos:82, neg:18}
+    ]
+  },
+  kigaliHeights: {
+    total: 9820, positive: 61, negative: 32,
+    topCategory: 'Waiting time',
+    cats: [
+      {name:'Waiting time', total:610, pos:52, neg:48},
+      {name:'Application usability', total:280, pos:60, neg:40},
+      {name:'Staff conduct', total:190, pos:78, neg:22},
+      {name:'Pricing and fees', total:75, pos:85, neg:15}
+    ]
+  },
+  butaro: {
+    total: 5210, positive: 79, negative: 14,
+    topCategory: 'Staff conduct',
+    cats: [
+      {name:'Staff conduct', total:320, pos:88, neg:12},
+      {name:'Waiting time', total:210, pos:74, neg:26},
+      {name:'Application usability', total:60, pos:80, neg:20},
+      {name:'Pricing and fees', total:40, pos:90, neg:10}
+    ]
+  },
+  magerwa: {
+    total: 3980, positive: 55, negative: 37,
+    topCategory: 'Waiting time',
+    cats: [
+      {name:'Waiting time', total:340, pos:47, neg:53},
+      {name:'Staff conduct', total:150, pos:66, neg:34},
+      {name:'Application usability', total:90, pos:63, neg:37},
+      {name:'Pricing and fees', total:35, pos:81, neg:19}
+    ]
+  },
+  remera: {
+    total: 4670, positive: 72, negative: 20,
+    topCategory: 'Pricing and fees',
+    cats: [
+      {name:'Pricing and fees', total:260, pos:58, neg:42},
+      {name:'Waiting time', total:230, pos:70, neg:30},
+      {name:'Staff conduct', total:140, pos:81, neg:19},
+      {name:'Application usability', total:55, pos:84, neg:16}
+    ]
+  }
+};
+
+var ATTENTION_THRESHOLD = 30;
+
+function renderBranch(key){
+  var d = branchData[key] || branchData.all;
+
+  document.getElementById('kpiTotal').textContent = d.total.toLocaleString();
+  document.getElementById('kpiPositive').textContent = d.positive + '%';
+  document.getElementById('kpiNegative').textContent = d.negative + '%';
+  document.getElementById('kpiTopCategory').textContent = d.topCategory;
+
+  var flagged = d.cats.filter(function(c){ return c.neg >= ATTENTION_THRESHOLD; });
+  document.getElementById('kpiAttentionValue').textContent =
+    flagged.length + (flagged.length === 1 ? ' category' : ' categories');
+
+  var wrap = document.getElementById('catRows');
+  wrap.innerHTML = '';
+  d.cats.forEach(function(c){
+    var row = document.createElement('div');
+    row.className = 'cat-row';
+    row.dataset.category = c.name;
+    row.innerHTML =
+      '<div class="cat-top"><span class="name">'+c.name+'</span><span class="meta">'+c.total.toLocaleString()+' mentions</span></div>'+
+      '<div class="bar"><div class="pos" style="width:'+c.pos+'%"></div><div class="neg" style="width:'+c.neg+'%"></div></div>';
+    wrap.appendChild(row);
+  });
+
+  var negRows = document.getElementById('trendingNegativeRows');
+  negRows.innerHTML = '';
+  d.cats.slice().sort(function(a,b){ return b.neg - a.neg; }).slice(0,2).forEach(function(c){
+    var row = document.createElement('div');
+    row.className = 'flag-row';
+    row.innerHTML =
+      '<div><p class="name">'+c.name+'</p><p class="meta">'+c.total.toLocaleString()+' mentions</p></div>'+
+      '<span class="pill">'+c.neg+'% negative</span>';
+    negRows.appendChild(row);
+  });
+
+  var posRows = document.getElementById('trendingPositiveRows');
+  posRows.innerHTML = '';
+  d.cats.slice().sort(function(a,b){ return b.pos - a.pos; }).slice(0,2).forEach(function(c){
+    var row = document.createElement('div');
+    row.className = 'flag-row';
+    row.innerHTML =
+      '<div><p class="name">'+c.name+'</p><p class="meta">'+c.total.toLocaleString()+' mentions</p></div>'+
+      '<span class="pill pos">'+c.pos+'% positive</span>';
+    posRows.appendChild(row);
+  });
+}
+
+function onBranchChange(){
+  var key = document.getElementById('branchSelect').value;
+  renderBranch(key);
+}
+
+/* ===================== Needs attention -> jump to categories ===================== */
+function goToAttentionCategories(){
+  var section = document.getElementById('catSection');
+  section.scrollIntoView({behavior:'smooth', block:'start'});
+
+  var key = document.getElementById('branchSelect').value;
+  var d = branchData[key] || branchData.all;
+  var flaggedNames = d.cats.filter(function(c){ return c.neg >= ATTENTION_THRESHOLD; })
+                            .map(function(c){ return c.name; });
+
+  document.querySelectorAll('#catRows .cat-row').forEach(function(row){
+    if(flaggedNames.indexOf(row.dataset.category) !== -1){
+      row.classList.add('flash');
+      setTimeout(function(){ row.classList.remove('flash'); }, 1800);
+    }
+  });
+}
+
+/* ===================== Date range calendar ===================== */
+var calViewDate = new Date(2026, 7, 1);
+var rangeStart = new Date(2026, 7, 31);
+var rangeEnd = new Date(2026, 8, 6);
+var pickingStart = false;
+
+var MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+var DOW = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+function fmt(d){
+  var mm = String(d.getMonth()+1).padStart(2,'0');
+  var dd = String(d.getDate()).padStart(2,'0');
+  return d.getFullYear()+'-'+mm+'-'+dd;
+}
+
+function toggleCalendar(e){
+  e.stopPropagation();
+  var pop = document.getElementById('calPop');
+  var wasOpen = pop.classList.contains('open');
+  pop.classList.toggle('open', !wasOpen);
+  if(!wasOpen){
+    renderCalendar();
+  }
+}
+document.addEventListener('click', function(e){
+  var pop = document.getElementById('calPop');
+  var field = document.getElementById('dateRangeInput');
+  if(pop.classList.contains('open') && !pop.contains(e.target) && e.target !== field){
+    pop.classList.remove('open');
+  }
+});
+document.getElementById('calPop') && document.getElementById('calPop').addEventListener('click', function(e){ e.stopPropagation(); });
+
+function calShiftMonth(delta){
+  calViewDate.setMonth(calViewDate.getMonth() + delta);
+  renderCalendar();
+}
+
+function renderCalendar(){
+  document.getElementById('calTitle').textContent = MONTH_NAMES[calViewDate.getMonth()] + ' ' + calViewDate.getFullYear();
+
+  var grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  DOW.forEach(function(d){
+    var el = document.createElement('div');
+    el.className = 'cal-dow';
+    el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  var year = calViewDate.getFullYear();
+  var month = calViewDate.getMonth();
+  var firstDay = new Date(year, month, 1);
+  var startOffset = firstDay.getDay();
+  var daysInMonth = new Date(year, month+1, 0).getDate();
+
+  for(var i=0;i<startOffset;i++){
+    var blank = document.createElement('div');
+    grid.appendChild(blank);
+  }
+
+  for(var day=1; day<=daysInMonth; day++){
+    var cell = document.createElement('div');
+    cell.className = 'cal-day';
+    var thisDate = new Date(year, month, day);
+    cell.textContent = day;
+
+    var lo = rangeStart < rangeEnd ? rangeStart : rangeEnd;
+    var hi = rangeStart < rangeEnd ? rangeEnd : rangeStart;
+    if(rangeStart && rangeEnd && thisDate >= lo && thisDate <= hi){
+      cell.classList.add('in-range');
+    }
+    if((rangeStart && thisDate.getTime() === rangeStart.getTime()) ||
+       (rangeEnd && thisDate.getTime() === rangeEnd.getTime())){
+      cell.classList.add('range-end');
+    }
+    cell.onclick = (function(d){ return function(){ pickDate(d); }; })(thisDate);
+    grid.appendChild(cell);
+  }
+}
+
+function pickDate(date){
+  if(!pickingStart){
+    rangeStart = date;
+    rangeEnd = date;
+    pickingStart = true;
+    document.getElementById('calHint').textContent = 'Select an end date';
+  } else {
+    rangeEnd = date;
+    pickingStart = false;
+    var lo = rangeStart < rangeEnd ? rangeStart : rangeEnd;
+    var hi = rangeStart < rangeEnd ? rangeEnd : rangeStart;
+    document.getElementById('dateRangeInput').value = fmt(lo) + ' → ' + fmt(hi);
+    document.getElementById('calHint').textContent = 'Select a start date';
+    document.getElementById('calPop').classList.remove('open');
+  }
+  renderCalendar();
+}
+
+/* ===================== Recent live feed ===================== */
+var feedItems = [
+  {
+    stars:1, branch:'Nyabugogo Branch', category:'Cash deposit', nlp:'negative', time:'5 mins ago',
+    quote:'Waited over 35 minutes just to deposit cash. Only two tellers were open during the lunch rush — Nyabugogo is always this crowded.',
+    action:'Add 2 extra tellers between 12 PM and 2 PM, when this branch sees its longest queues.'
+  },
+  {
+    stars:5, branch:'Kigali HQ Main Branch', category:'Account opening', nlp:'positive', time:'12 mins ago',
+    quote:'Very professional welcome. The teller explained all the card options clearly, and I submitted everything through the Murakoze QR code.'
+  },
+  {
+    stars:2, branch:'Nyamirambo Branch', category:'Cash withdrawal', nlp:'negative', time:'24 mins ago',
+    quote:'The queuing kiosk ran out of paper, so the guard had to write numbers by hand. It created a lot of clutter right at the entrance.',
+    action:'Check the kiosk paper roll each morning and midday so it doesn\'t run out during busy hours.'
+  },
+  {
+    stars:5, branch:'Kibeho Pilgrim Center Agency', category:'Mobile app setup', nlp:'positive', time:'35 mins ago',
+    quote:'Super fast. The QR survey code on the counter made it really easy to leave a rating. Thank you, Murakoze!'
+  },
+  {
+    stars:3, branch:'Huye Main Branch', category:'Foreign exchange', nlp:'neutral', time:'48 mins ago',
+    quote:'Rate was fine and in line with what I expected, but the process took a couple of extra forms compared to last time.'
+  }
+];
+
+function starsClass(n){
+  if(n <= 2) return 'low';
+  if(n === 3) return 'mid';
+  return 'high';
+}
+
+function renderFeed(){
+  var list = document.getElementById('feedList');
+  list.innerHTML = '';
+  feedItems.forEach(function(item){
+    var card = document.createElement('div');
+    card.className = 'feed-card';
+    card.innerHTML =
+      '<div class="feed-top">'+
+        '<div class="feed-meta">'+
+          '<span class="stars '+starsClass(item.stars)+'">'+item.stars+'★ Rating</span>'+
+          '<span class="feed-branch">'+item.branch+'</span>'+
+          '<span class="feed-sep">·</span>'+
+          '<span class="feed-cat">'+item.category+'</span>'+
+        '</div>'+
+        '<div>'+
+          '<span class="feed-nlp '+item.nlp+'">'+item.nlp.toUpperCase()+' NLP</span>'+
+          '<span class="feed-time">'+item.time+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<p class="feed-quote">"'+item.quote+'"</p>'+
+      (item.action ?
+        '<div class="feed-action">'+
+          '<i class="ti ti-bulb"></i>'+
+          '<div><span class="fa-label">AI-suggested fix for this issue</span><span class="fa-text">'+item.action+'</span></div>'+
+        '</div>'
+      : '');
+    list.appendChild(card);
+  });
+  document.getElementById('feedMatchCount').textContent = feedItems.length + ' comments match criteria';
+}
+
+/* ===================== AI Chatbot widget ===================== */
+function toggleChatWidget(){
+  document.getElementById('chatWidget').classList.toggle('open');
+  document.getElementById('chatToggleBtn').classList.toggle('open');
+}
+
+async function sendChatMessage(){
+  var input = document.getElementById('chatInput');
+  var question = input.value.trim();
+  if(!question) return;
+
+  var box = document.getElementById('chatMessages');
+
+  var userMsg = document.createElement('div');
+  userMsg.className = 'msg user';
+  userMsg.textContent = question;
+  box.appendChild(userMsg);
+
+  input.value = '';
+  box.scrollTop = box.scrollHeight;
+
+  var typing = document.createElement('div');
+  typing.className = 'msg typing';
+  typing.textContent = 'Thinking...';
+  box.appendChild(typing);
+  box.scrollTop = box.scrollHeight;
+
+  try {
+    var response = await fetch('/ask', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({question: question})
+    });
+    var data = await response.json();
+    typing.remove();
+
+    var botMsg = document.createElement('div');
+    botMsg.className = 'msg bot';
+    botMsg.textContent = data.answer;
+    box.appendChild(botMsg);
+  } catch(err){
+    typing.remove();
+    var errMsg = document.createElement('div');
+    errMsg.className = 'msg bot';
+    errMsg.textContent = 'Sorry, I could not reach the server.';
+    box.appendChild(errMsg);
+  }
+  box.scrollTop = box.scrollHeight;
+}
+
+document.getElementById('chatInput').addEventListener('keypress', function(e){
+  if(e.key === 'Enter') sendChatMessage();
+});
+
+/* ===================== Init ===================== */
+renderBranch('all');
+renderFeed();
+</script>
 </body>
 </html>
