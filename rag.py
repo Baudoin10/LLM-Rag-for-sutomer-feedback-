@@ -4,6 +4,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from groq import Groq
 
+
 DOCS_DIR = "docs"
 
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
